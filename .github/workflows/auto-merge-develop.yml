@@ -1,0 +1,52 @@
+name: Auto-merge to Develop
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  merge-to-develop:
+    name: Merge main to develop
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge main into develop
+        run: |
+          git fetch origin develop
+          git checkout develop
+          git merge --no-ff origin/main -m "chore: merge main into develop [skip ci]"
+          git push origin develop
+        continue-on-error: true
+
+      - name: Create PR if merge failed
+        if: failure()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto-merge/main-to-develop
+          base: develop
+          title: "chore: merge main into develop"
+          body: |
+            Automatic merge of `main` into `develop` failed due to conflicts.
+
+            Please resolve conflicts manually and merge this PR.
+
+            ## Instructions
+            1. Review the conflicts
+            2. Resolve them locally or through the GitHub UI
+            3. Merge this PR into `develop`
+          labels: |
+            automated
+            merge-conflict

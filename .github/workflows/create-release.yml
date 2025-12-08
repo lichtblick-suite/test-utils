@@ -1,0 +1,196 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.2.0)"
+        required: true
+        type: string
+      release_type:
+        description: "Type of release"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - custom
+      source_branch:
+        description: "Source branch (default: develop)"
+        required: false
+        default: "develop"
+        type: string
+
+jobs:
+  create-release-branch:
+    name: Create Release Branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new-version
+        run: |
+          if [ "${{ inputs.release_type }}" = "custom" ]; then
+            NEW_VERSION="${{ inputs.version }}"
+          else
+            # Auto-calculate version based on type
+            CURRENT="${{ steps.current-version.outputs.current }}"
+            IFS='.' read -r -a parts <<< "$CURRENT"
+            MAJOR="${parts[0]}"
+            MINOR="${parts[1]}"
+            PATCH="${parts[2]}"
+            
+            case "${{ inputs.release_type }}" in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+            
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 New version will be: $NEW_VERSION"
+
+      - name: Validate version
+        run: |
+          CURRENT="${{ steps.current-version.outputs.current }}"
+          NEW="${{ steps.new-version.outputs.version }}"
+
+          # Check version format
+          if ! [[ "$NEW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $NEW"
+            echo "Expected format: X.Y.Z (e.g., 1.2.0)"
+            exit 1
+          fi
+
+          # Check if new version is greater than current
+          if [ "$(printf '%s\n' "$NEW" "$CURRENT" | sort -V | head -n1)" = "$NEW" ] && [ "$NEW" != "$CURRENT" ]; then
+            echo "❌ New version ($NEW) must be greater than current version ($CURRENT)"
+            exit 1
+          fi
+
+          echo "✅ Version validation passed"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create release branch
+        id: create-branch
+        run: |
+          VERSION="${{ steps.new-version.outputs.version }}"
+          BRANCH_NAME="release/v${VERSION}"
+
+          # Check if branch already exists
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            echo "❌ Branch $BRANCH_NAME already exists"
+            exit 1
+          fi
+
+          git checkout -b "$BRANCH_NAME"
+          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Created branch: $BRANCH_NAME"
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.new-version.outputs.version }}"
+          npm version "$VERSION" --no-git-tag-version
+          echo "✅ Updated package.json to version $VERSION"
+
+      - name: Commit version bump
+        run: |
+          VERSION="${{ steps.new-version.outputs.version }}"
+          git add package.json
+          git commit -m "chore: bump version to $VERSION"
+
+      - name: Push release branch
+        run: |
+          BRANCH_NAME="${{ steps.create-branch.outputs.branch }}"
+          git push origin "$BRANCH_NAME"
+          echo "✅ Pushed $BRANCH_NAME to remote"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.create-branch.outputs.branch }}
+          base: main
+          title: "Release v${{ steps.new-version.outputs.version }}"
+          body: |
+            ## 🚀 Release v${{ steps.new-version.outputs.version }}
+
+            This PR was automatically created by the Create Release workflow.
+
+            ### Changes
+            - Version bumped from `${{ steps.current-version.outputs.current }}` to `${{ steps.new-version.outputs.version }}`
+            - Release type: **${{ inputs.release_type }}**
+            - Source branch: `${{ inputs.source_branch }}`
+
+            ### Next Steps
+            1. Review the changes
+            2. Approve and merge this PR
+            3. The release workflow will automatically:
+               - Create Git tag `v${{ steps.new-version.outputs.version }}`
+               - Generate changelog
+               - Create GitHub Release
+               - Publish to NPM
+               - Merge back to develop
+
+            ### Checklist
+            - [ ] Version is correct
+            - [ ] Tests are passing
+            - [ ] Documentation is updated
+            - [ ] Breaking changes documented (if any)
+          labels: |
+            release
+            automated
+
+      - name: Summary
+        run: |
+          echo "## ✅ Release Branch Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current Version**: ${{ steps.current-version.outputs.current }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version**: ${{ steps.new-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Type**: ${{ inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ steps.create-branch.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source**: ${{ inputs.source_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "A Pull Request has been created automatically." >> $GITHUB_STEP_SUMMARY
+          echo "Review and merge it to trigger the release workflow." >> $GITHUB_STEP_SUMMARY

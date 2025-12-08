@@ -1,0 +1,29 @@
+# Source
+src/
+tsconfig.json
+
+# Tests
+*.test.ts
+*.spec.ts
+**/__tests__/
+
+# Development
+.git/
+.github/
+node_modules/
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Yarn
+.yarn/
+.pnp.*
+yarn.lock
