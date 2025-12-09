@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (e.g., 1.2.0)"
-        required: true
+        description: "Release version (e.g., 1.2.0) - Only required for custom releases"
+        required: false
         type: string
       release_type:
         description: "Type of release"
@@ -56,6 +56,10 @@ jobs:
         id: new-version
         run: |
           if [ "${{ inputs.release_type }}" = "custom" ]; then
+            if [ -z "${{ inputs.version }}" ]; then
+              echo "❌ Version is required for custom releases"
+              exit 1
+            fi
             NEW_VERSION="${{ inputs.version }}"
           else
             # Auto-calculate version based on type
