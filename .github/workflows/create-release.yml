@@ -125,10 +125,20 @@ jobs:
           VERSION="${{ steps.new-version.outputs.version }}"
           BRANCH_NAME="release/v${VERSION}"
 
+          # Debug: List all remote branches
+          echo "📋 Checking remote branches..."
+          git ls-remote --heads origin
+
           # Check if branch already exists
           if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
-            echo "❌ Branch $BRANCH_NAME already exists"
+            echo "❌ Branch $BRANCH_NAME already exists on remote"
             exit 1
+          fi
+
+          # Check if branch exists locally
+          if git show-ref --verify --quiet refs/heads/"$BRANCH_NAME"; then
+            echo "⚠️ Branch exists locally, deleting..."
+            git branch -D "$BRANCH_NAME"
           fi
 
           git checkout -b "$BRANCH_NAME"
