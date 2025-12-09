@@ -141,24 +141,13 @@ jobs:
           npm version "$VERSION" --no-git-tag-version
           echo "✅ Updated package.json to version $VERSION"
 
-      - name: Commit version bump
-        run: |
-          VERSION="${{ steps.new-version.outputs.version }}"
-          git add package.json
-          git commit -m "chore: bump version to $VERSION"
-
-      - name: Push release branch
-        run: |
-          BRANCH_NAME="${{ steps.create-branch.outputs.branch }}"
-          git push origin "$BRANCH_NAME"
-          echo "✅ Pushed $BRANCH_NAME to remote"
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.create-branch.outputs.branch }}
           base: main
+          commit-message: "chore: bump version to ${{ steps.new-version.outputs.version }}"
           title: "Release v${{ steps.new-version.outputs.version }}"
           body: |
             ## 🚀 Release v${{ steps.new-version.outputs.version }}
