@@ -487,7 +487,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.39.1":
+"@eslint/js@npm:9.39.1, @eslint/js@npm:^9.39.1":
   version: 9.39.1
   resolution: "@eslint/js@npm:9.39.1"
   checksum: 10c0/6f7f26f8cdb7ad6327bbf9741973b6278eb946f18f70e35406e88194b0d5c522d0547a34a02f2a208eec95c5d1388cdf7ccb20039efd2e4cb6655615247a50f1
@@ -911,12 +911,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lichtblick/eslint-plugin@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@lichtblick/eslint-plugin@npm:2.0.1"
+"@lichtblick/eslint-plugin@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@lichtblick/eslint-plugin@npm:2.0.3"
   dependencies:
     "@eslint/compat": "npm:^1"
+    eslint-config-prettier: "npm:^9"
+    eslint-plugin-es: "npm:^4"
     eslint-plugin-filenames: "npm:^1"
+    eslint-plugin-import: "npm:^2"
     eslint-plugin-jest: "npm:^28"
     eslint-plugin-prettier: "npm:^5"
     eslint-plugin-react: "npm:^7"
@@ -927,12 +930,9 @@ __metadata:
   peerDependencies:
     eslint: ^9.38.0
     eslint-config-prettier: ^8 || ^9
-    eslint-plugin-es: ^4
-    eslint-plugin-filenames: ^1
-    eslint-plugin-import: ^2
-    eslint-plugin-prettier: ^5
     prettier: ^3
-  checksum: 10c0/c1c3eb65d10a960ad2dfe224a03ab81c671d23ec6a22fb57a6607eb5071df06eed962bd3ec753c659db3022442a960ad742747b89d533a9194d90751f242a352
+    typescript: ^4 || ^5
+  checksum: 10c0/292856d380bd048c2c5b4f39cfddbe2d497fbab55e6560d6eb10a3bbbcdec8c83d8a52a2115c3d8341bd03aeb7bc3b7eb304b9cbf8213b0fd681f6698acb3b86
   languageName: node
   linkType: hard
 
@@ -940,14 +940,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lichtblick/test-builders@workspace:."
   dependencies:
-    "@lichtblick/eslint-plugin": "npm:^2.0.1"
+    "@eslint/js": "npm:^9.39.1"
+    "@lichtblick/eslint-plugin": "npm:^2.0.3"
     "@lichtblick/tsconfig": "npm:^1.0.2"
     "@types/jest": "npm:^30.0.0"
     "@types/lodash-es": "npm:^4.17.0"
     "@types/randomstring": "npm:^1.1.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.0.0"
     "@typescript-eslint/parser": "npm:^8.0.0"
-    eslint: "npm:^9.17.0"
+    "@typescript-eslint/utils": "npm:^8.49.0"
+    eslint: "npm:^9.39.1"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-es: "npm:^4.1.0"
     eslint-plugin-filenames: "npm:^1.3.2"
@@ -1451,7 +1453,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.49.0, @typescript-eslint/utils@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
+"@typescript-eslint/utils@npm:8.49.0, @typescript-eslint/utils@npm:^6.0.0 || ^7.0.0 || ^8.0.0, @typescript-eslint/utils@npm:^8.49.0":
   version: 8.49.0
   resolution: "@typescript-eslint/utils@npm:8.49.0"
   dependencies:
@@ -2575,7 +2577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:^9.1.0":
+"eslint-config-prettier@npm:^9, eslint-config-prettier@npm:^9.1.0":
   version: 9.1.2
   resolution: "eslint-config-prettier@npm:9.1.2"
   peerDependencies:
@@ -2609,7 +2611,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-es@npm:^4.1.0":
+"eslint-plugin-es@npm:^4, eslint-plugin-es@npm:^4.1.0":
   version: 4.1.0
   resolution: "eslint-plugin-es@npm:4.1.0"
   dependencies:
@@ -2635,7 +2637,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import@npm:^2.31.0":
+"eslint-plugin-import@npm:^2, eslint-plugin-import@npm:^2.31.0":
   version: 2.32.0
   resolution: "eslint-plugin-import@npm:2.32.0"
   dependencies:
@@ -2779,7 +2781,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.17.0":
+"eslint@npm:^9.39.1":
   version: 9.39.1
   resolution: "eslint@npm:9.39.1"
   dependencies:
