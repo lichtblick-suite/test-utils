@@ -2,6 +2,7 @@
   "name": "@lichtblick/test-builders",
   "version": "1.0.0",
   "description": "Test utilities and builders for Lichtblick projects",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,7 +12,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "clean": "rm -rf dist",
     "prepublishOnly": "yarn clean && yarn build",
     "test": "jest",
@@ -61,6 +62,7 @@
     "prettier": "^3.0.0",
     "ts-jest": "^29.4.6",
     "tslib": "^2.8.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.0.0"
   },
   "packageManager": "yarn@4.12.0"
